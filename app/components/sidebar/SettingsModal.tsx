@@ -11,6 +11,7 @@ import Input from "@/app/components/inputs/Input"
 import Image from "next/image"
 import { CldUploadButton } from "next-cloudinary"
 import Button from "@/app/components/button"
+import clsx from "clsx" // Import clsx to reuse Button's styles
 
 interface SettingsModalProps {
   isOpen?: boolean
@@ -83,19 +84,37 @@ function SettingsModal({ isOpen, onClose, currentUser }: SettingsModalProps) {
               <Image
                 className="rounded-full w-[48px] h-[48px] object-cover"
                 src={image || currentUser?.image || "/images/placeholder.jpg"}
-                width={48}   // ✅ numbers, not strings
+                width={48}
                 height={48}
                 alt="Avatar"
               />
 
               <CldUploadButton
                 options={{ maxFiles: 1 }}
-                onSuccess={handleUpload}   // ✅ updated prop
+                onSuccess={handleUpload}
                 uploadPreset="Aditya"
               >
-                <Button disabled={isLoading} secondary type="button">
+                <div
+                  className={clsx(
+                    `
+                    flex 
+                    justify-center 
+                    rounded-md 
+                    px-3 
+                    py-2 
+                    text-sm 
+                    font-semibold 
+                    focus-visible:outline 
+                    focus-visible:outline-2 
+                    focus-visible:outline-offset-2 
+                    `,
+                    isLoading && "opacity-50 cursor-default",
+                    "text-neutral-400", 
+                    "bg-sky-500 hover:bg-sky-600 focus-visible:outline-sky-600" 
+                  )}
+                >
                   Change
-                </Button>
+                </div>
               </CldUploadButton>
             </div>
           </div>
