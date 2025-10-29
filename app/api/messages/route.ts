@@ -77,3 +77,75 @@ export async function POST(request:Request) {
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
+
+export async function PATCH(request: Request) {
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser?.id || !currentUser?.email) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const body = await request.json();
+        const { messageId, body: nextBody } = body as { messageId?: string; body?: string };
+
+        if (!messageId || typeof nextBody !== 'string') {
+            return new NextResponse("Invalid request", { status: 400 });
+        }
+
+        const message = await prisma.message.findUnique({
+            where: { id: messageId },
+            select: { id: true, senderId: true, conversationId: true }
+        });
+
+        if (!message) {
+            return new NextResponse("Not found", { status: 404 });
+        }
+
+        if (message.senderId !== currentUser.id) {
+            return new NextResponse("Forbidden", { status: 403 });
+        }
+
+        const updated = await prisma.message.update({
+            where: { id: messageId },
+            data: { body: nextBody },
+            include: { sender: true, seen: true }
+        });
+
+        // Notify clients the message was updated
+        await pusherServer.trigger(message.conversationId, 'message:update', updated);
+
+        return NextResponse.json(updated);
+    } catch (error) {
+        console.log(error, 'ERROR_MESSAGES_PATCH');
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    try {
+        const currentUser = await getCurrentUser();
+        if (!currentUser?.id || !currentUser?.email) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const body = await request.json();
+        const { messageId } = body as { messageId?: string };
+        if (!messageId) return new NextResponse("Invalid request", { status: 400 });
+
+        const message = await prisma.message.findUnique({
+            where: { id: messageId },
+            select: { id: true, senderId: true, conversationId: true }
+        });
+        if (!message) return new NextResponse("Not found", { status: 404 });
+        if (message.senderId !== currentUser.id) return new NextResponse("Forbidden", { status: 403 });
+
+        await prisma.message.delete({ where: { id: messageId } });
+
+        await pusherServer.trigger(message.conversationId, 'message:delete', { id: messageId });
+
+        return NextResponse.json({ id: messageId });
+    } catch (error) {
+        console.log(error, 'ERROR_MESSAGES_DELETE');
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}

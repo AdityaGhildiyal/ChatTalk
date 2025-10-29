@@ -83,12 +83,7 @@ const Input: React.FC<InputProps> = ({
               transition-all
               duration-200
               pointer-events-none
-              peer-placeholder-shown:text-base
-              peer-placeholder-shown:top-3
-              peer-placeholder-shown:left-4
-              peer-focus:-top-2.5
               peer-focus:text-cyan-400
-              peer-focus:text-sm
             `,
             errors[id] && "text-red-400 peer-focus:text-red-400"
           )}

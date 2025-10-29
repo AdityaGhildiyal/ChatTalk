@@ -2,11 +2,11 @@
 
 import clsx from "clsx";
 import Link from "next/link";
-import { LucideIcon } from "lucide-react";
+import { IconType } from "react-icons";
 
 interface DesktopItemProps {
   label: string;
-  icon: LucideIcon;
+  icon: IconType;
   href: string;
   onClick?: () => void;
   active?: boolean;

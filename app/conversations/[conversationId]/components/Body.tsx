@@ -40,13 +40,19 @@ export default function Body({ initialMessages }: BodyProps) {
       );
     };
 
+    const deleteMessageHandler = ({ id }: { id: string }) => {
+      setMessages((current) => current.filter((m) => m.id !== id));
+    };
+
     pusherClient.bind('messages:new', messageHandler);
     pusherClient.bind('message:update', updateMessageHandler);
+    pusherClient.bind('message:delete', deleteMessageHandler);
 
     return () => {
       pusherClient.unsubscribe(conversationId);
       pusherClient.unbind('messages:new', messageHandler);
       pusherClient.unbind('message:update', updateMessageHandler);
+      pusherClient.unbind('message:delete', deleteMessageHandler);
     };
   }, [conversationId]);
 
