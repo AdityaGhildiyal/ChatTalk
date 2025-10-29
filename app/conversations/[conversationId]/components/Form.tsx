@@ -3,7 +3,7 @@
 import axios from "axios";
 import { HiPaperAirplane, HiPhoto } from "react-icons/hi2";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-import { CldUploadWidget } from "next-cloudinary";  // <-- Use Widget (no nested button)
+import { CldUploadWidget } from "next-cloudinary";  
 import useConversation from "@/app/hooks/useConversation";
 import MessageInput from "./MessageInput";
 
@@ -26,8 +26,7 @@ export default function Form() {
   };
 
   return (
-    <div className="flex items-center gap-3 p-4 bg-neutral-900/95 backdrop-blur-xl border-t border-neutral-800">
-      {/* CldUploadWidget – renders its own button, no nesting */}
+    <div className="flex items-center gap-3 p-4 bg-gradient-to-b from-neutral-900 to-black/95 border-t border-neutral-800">
       <CldUploadWidget
         options={{ maxFiles: 1 }}
         onSuccess={handleUpload}

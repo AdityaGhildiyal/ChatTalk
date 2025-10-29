@@ -28,7 +28,7 @@ export default function Header({ conversation }: HeaderProps) {
   return (
     <>
       <ProfileDrawer data={conversation} isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
-      <div className="bg-neutral-900/95 backdrop-blur-xl border-b border-neutral-800 px-4 py-3 flex items-center justify-between">
+      <div className="bg-gradient-to-b from-neutral-900 to-black/95 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/conversations" className="lg:hidden text-cyan-400 hover:text-cyan-300">
             <HiChevronLeft size={32} />

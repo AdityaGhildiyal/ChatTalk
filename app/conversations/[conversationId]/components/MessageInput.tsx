@@ -52,19 +52,6 @@ export default function MessageInput({
         `}
       />
 
-      {/* Floating Label (Optional — uncomment if you want) */}
-      {/* <label
-        htmlFor={id}
-        className={`
-          absolute left-5 top-1/2 -translate-y-1/2
-          text-sm text-neutral-400 pointer-events-none
-          transition-all duration-200
-          peer-focus:top-2 peer-focus:text-xs peer-focus:text-cyan-400
-          ${value ? 'top-2 text-xs text-cyan-400' : ''}
-        `}
-      >
-        {placeholder}
-      </label> */}
 
       {/* Error Icon */}
       {hasError && (
