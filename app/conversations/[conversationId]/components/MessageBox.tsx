@@ -1,70 +1,121 @@
-'use client'
+'use client';
 
-import Image from "next/image"
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { format } from "date-fns";
+import clsx from "clsx";
+import { motion } from "framer-motion";
 
-import { useSession } from "next-auth/react"
-import { format } from "date-fns"
-import clsx from "clsx"
-
-import Avatar from "@/app/components/Avatar"
-import { FullMessageType } from "@/app/types"
-import { useState } from "react"
-import ImageModal from "./ImageModal"
-
-	
+import Avatar from "@/app/components/Avatar";
+import { FullMessageType } from "@/app/types";
+import { useState } from "react";
+import ImageModal from "./ImageModal";
 
 interface MessageBoxProps {
-  data:FullMessageType
-  isLast?:boolean
+  data: FullMessageType;
+  isLast?: boolean;
 }
 
-export default function MessageBox ({data,isLast}:MessageBoxProps) {
+export default function MessageBox({ data, isLast }: MessageBoxProps) {
+  const session = useSession();
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
-  const session = useSession()
-  const [imageModalOpen,setImageModalOpen] = useState(false)
+  const isOwn = session.data?.user?.email === data?.sender?.email;
+  const seenList = (data.seen || [])
+    .filter((u) => u.email !== data?.sender?.email)
+    .map((u) => u.name)
+    .join(', ');
 
-  const isOwn = session.data?.user?.email === data?.sender?.email
-  const seenList = (data.seen || []).filter(user => user.email !== data?.sender?.email)
-  .map(user => user.name)
-  .join(', ')
-
-  const container = clsx('flex gap-3 p-4',isOwn && 'justify-end')
-
-  const avatar = clsx(isOwn && 'order-2')
-
-  const body = clsx('flex flex-col gap-2',isOwn && 'items-end')
-
-  const message = clsx('text-sm w-fit overflow-hidden',isOwn ? 'bg-sky-500 text-white' : 'bg-gray-500',
-  data.image ? 'rounded-md p-0' : 'rounded-full px-3 py-2')
-
-return (
-    <div className={container}>
-      <div className={avatar}>
-        <Avatar user={data.sender}/>
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={clsx(
+        "flex items-end gap-3 py-2.5 px-4 group/message",
+        isOwn ? "flex-row-reverse" : "flex-row"
+      )}
+    >
+      {/* Avatar */}
+      <div className={clsx("flex-shrink-0 relative", isOwn && "order-3")}>
+        <Avatar user={data.sender} size={40} />
+        {/* Online Pulse Dot */}
+        <span
+          className={clsx(
+            "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-black",
+            "animate-ping opacity-75"
+          )}
+        />
+        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-black" />
       </div>
-      <div className={body}>
-        <div className="flex items-center gap-1">
-          <div className="text-sm text-gray-500">
-            {data.sender.name}
-          </div>
-          <div className="text-xs text-gray-400">
-            {format(new Date(data.createdAt),'p')}
-          </div>
+
+      {/* Message Content */}
+      <div
+        className={clsx(
+          "flex flex-col max-w-[70%]",
+          isOwn ? "items-end mr-2" : "items-start ml-2"
+        )}
+      >
+        {/* Name + Time */}
+        <div className="flex items-baseline gap-2 text-xs text-neutral-400 mb-1">
+          <span className="font-medium text-neutral-300">{data.sender.name}</span>
+          <span>{format(new Date(data.createdAt), "h:mm a")}</span>
         </div>
-        <div className={message}>
-          <ImageModal src={data.image} isOpen={imageModalOpen} onClose={() => setImageModalOpen(false)}/>
-          {data.image 
-          ? <Image className="object-cover cursor-pointer hover:scale-110 transition translate" src={data.image} alt="Image"
-           width='288' height='288' onClick={() => setImageModalOpen(true)}/>
-          : <div>{data.body}</div>}
-        </div>
-        {isLast && isOwn && seenList.length > 0 &&
-        (
-          <div className="text-xs font-light text-gray-500">
-            {`Seen by ${seenList}`}
-          </div>
+
+        {/* Bubble */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className={clsx(
+            "relative rounded-3xl px-4 py-2.5 text-sm break-words",
+            "backdrop-blur-md border border-neutral-800/50",
+            "shadow-lg",
+            isOwn
+              ? "bg-gradient-to-br from-cyan-600 to-cyan-700 text-white rounded-tr-none"
+              : "bg-neutral-800/90 text-neutral-100 rounded-tl-none"
+          )}
+        >
+          {/* Image */}
+          {data.image ? (
+            <div className="relative overflow-hidden rounded-xl">
+              <ImageModal
+                src={data.image}
+                isOpen={imageModalOpen}
+                onClose={() => setImageModalOpen(false)}
+              />
+              <Image
+                src={data.image}
+                alt="Sent"
+                width={260}
+                height={260}
+                className="rounded-xl object-cover cursor-pointer transition-all duration-300 hover:scale-105"
+                onClick={() => setImageModalOpen(true)}
+              />
+            </div>
+          ) : (
+            <div className="leading-relaxed">{data.body}</div>
+          )}
+
+          {/* Hover Glow */}
+          <div
+            className={clsx(
+              "absolute inset-0 rounded-3xl bg-cyan-500/10 opacity-0 group-hover/message:opacity-100 transition-opacity pointer-events-none",
+              isOwn ? "-right-1 -top-1" : "-left-1 -top-1"
+            )}
+          />
+        </motion.div>
+
+        {/* Seen By */}
+        {isLast && isOwn && seenList.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-xs text-neutral-500 mt-1"
+          >
+            Seen by {seenList}
+          </motion.div>
         )}
       </div>
-    </div>
-)
+    </motion.div>
+  );
 }

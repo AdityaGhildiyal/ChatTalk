@@ -17,7 +17,9 @@
     "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.24",
     "lodash": "^4.17.21",
+    "lucide-react": "^0.548.0",
     "next": "15.5.4",
     "next-auth": "^4.24.11",
     "next-cloudinary": "^6.16.0",
@@ -31,6 +33,9 @@
     "react-select": "^5.10.2",
     "react-spinner": "^0.2.7",
     "react-spinners": "^0.17.0",
+    "react-virtualized-auto-sizer": "^1.0.26",
+    "react-window": "^2.2.2",
+    "tailwind-merge": "^3.3.1",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

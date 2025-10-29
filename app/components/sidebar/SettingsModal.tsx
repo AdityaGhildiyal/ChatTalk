@@ -10,8 +10,7 @@ import Modal from "@/app/components/Modal"
 import Input from "@/app/components/inputs/Input"
 import Image from "next/image"
 import { CldUploadButton } from "next-cloudinary"
-import Button from "@/app/components/button"
-import clsx from "clsx" // Import clsx to reuse Button's styles
+import { Upload, X } from "lucide-react"
 
 interface SettingsModalProps {
   isOpen?: boolean
@@ -34,101 +33,146 @@ function SettingsModal({ isOpen, onClose, currentUser }: SettingsModalProps) {
   const image = watch("image")
 
   const handleUpload = (result: any) => {
-    setValue("image", result?.info?.secure_url, {
-      shouldValidate: true
-    })
+    setValue("image", result?.info?.secure_url, { shouldValidate: true })
   }
 
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setIsLoading(true)
-
     axios.post("/api/settings", data)
       .then(() => {
         router.refresh()
         onClose()
+        toast.success("Profile updated!", { style: { background: '#1a1a1a', color: '#fff' } })
       })
       .catch(() => toast.error("Something went wrong!"))
       .finally(() => setIsLoading(false))
   }
 
-  if (!currentUser) {
-    return null
-  }
+  if (!currentUser) return null
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="space-y-12">
-          <div className="border-b border-gray-900/10 pb-12">
-            <h2 className="text-base font-semibold leading-7 text-neutral-200">Profile</h2>
-            <p className="mt-1 text-sm leading-6 text-neutral-300">
-              Edit your public information
-            </p>
-
-            <div className="mt-10 flex flex-col gap-y-8">
-              <Input
-                label="Name"
-                id="name"
-                errors={errors}
-                register={register}
-                disabled={isLoading}
-                required
-              />
+      <div className="bg-neutral-900/90 backdrop-blur-xl border border-neutral-800 rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+              <p className="text-sm text-neutral-400 mt-1">Update your public information</p>
             </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-neutral-500 hover:text-white transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-            <label className="block text-sm font-medium leading-6 text-gray-900">
-              Photo
-            </label>
-
-            <div className="mt-2 flex gap-x-3 items-center">
-              <Image
-                className="rounded-full w-[48px] h-[48px] object-cover"
-                src={image || currentUser?.image || "/images/placeholder.jpg"}
-                width={48}
-                height={48}
-                alt="Avatar"
-              />
+          {/* Avatar + Upload */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-5">
+              <div className="relative group">
+                <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-neutral-800 transition-all group-hover:ring-cyan-500">
+                  <Image
+                    src={image || currentUser.image || "/images/placeholder.jpg"}
+                    alt="Avatar"
+                    width={80}
+                    height={80}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {isLoading && (
+                  <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-cyan-400 border-t-transparent"></div>
+                  </div>
+                )}
+              </div>
 
               <CldUploadButton
                 options={{ maxFiles: 1 }}
                 onSuccess={handleUpload}
                 uploadPreset="Aditya"
               >
-                <div
-                  className={clsx(
-                    `
-                    flex 
-                    justify-center 
-                    rounded-md 
-                    px-3 
-                    py-2 
-                    text-sm 
-                    font-semibold 
-                    focus-visible:outline 
-                    focus-visible:outline-2 
-                    focus-visible:outline-offset-2 
-                    `,
-                    isLoading && "opacity-50 cursor-default",
-                    "text-neutral-400", 
-                    "bg-sky-500 hover:bg-sky-600 focus-visible:outline-sky-600" 
-                  )}
-                >
-                  Change
+                <div className={`
+                  flex items-center gap-2 px-4 py-2 rounded-full
+                  bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white
+                  border border-neutral-700 hover:border-cyan-500
+                  text-sm font-medium transition-all duration-200 cursor-pointer
+                  ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                `}>
+                  <Upload className="w-4 h-4" />
+                  Change Photo
                 </div>
               </CldUploadButton>
             </div>
           </div>
 
-          <div className="mt-6 flex justify-center items-center gap-x-6">
-            <Button disabled={isLoading} secondary onClick={onClose}>
-              Cancel
-            </Button>
-            <Button disabled={isLoading} type="submit">
-              Save
-            </Button>
+          {/* Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-300 mb-2">
+              Display Name
+            </label>
+            <Input
+              label="Display Name"
+              id="name"
+              register={register}
+              errors={errors}
+              required
+              disabled={isLoading}
+              className="
+                w-full px-4 py-3 rounded-xl
+                bg-neutral-800/50 border border-neutral-700
+                text-white placeholder-neutral-500
+                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500
+                transition-all duration-200
+                disabled:opacity-50
+              "
+            />
           </div>
-        </div>
-      </form>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="
+                px-5 py-2.5 rounded-full text-sm font-medium
+                text-neutral-400 hover:text-white
+                bg-neutral-800 hover:bg-neutral-700
+                border border-neutral-700
+                transition-all duration-200
+                disabled:opacity-50
+              "
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="
+                px-6 py-2.5 rounded-full text-sm font-medium text-white
+                bg-gradient-to-r from-cyan-500 to-blue-600
+                hover:from-cyan-400 hover:to-blue-500
+                shadow-lg hover:shadow-cyan-500/25
+                transition-all duration-200
+                disabled:opacity-60 disabled:cursor-not-allowed
+                flex items-center gap-2
+              "
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </Modal>
   )
 }

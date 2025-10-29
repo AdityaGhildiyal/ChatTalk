@@ -7,3 +7,8 @@ html, body, #root {
   margin: 0;
   padding: 0;
 }
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
